@@ -3,6 +3,10 @@ QQ群1033606133
 https://discord.gg/srTHvPyycG
 ]]
 
+queue_on_teleport([[
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/454244513/Open-Source/refs/heads/main/%E4%BF%84%E4%BA%A5%E4%BF%84%E5%B7%9E%E6%8D%A2%E6%9C%8D%E6%8C%82%E6%9C%BA.lua"))()
+]])
+
 local player = game:GetService("Players").LocalPlayer
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
