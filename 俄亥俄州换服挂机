@@ -1,1 +1,101 @@
 
+local Players = cloneref(game:GetService("Players"))
+local LocalPlayer = Players.LocalPlayer
+local Character
+local HumanoidRootPart
+Character = LocalPlayer.Character
+HumanoidRootPart = Character and (Character.PrimaryPart or Character:FindFirstChildOfClass("HumanoidRootPart"))
+LocalPlayer.CharacterAdded:Connect(function(char)
+	Character = char
+	HumanoidRootPart = char.PrimaryPart or char:WaitForChild("HumanoidRootPart")
+end)
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+local load = require(ReplicatedStorage.devv).load
+local Signal = load("Signal")
+
+local time = os.time()
+local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100"))
+local availableServers = {}
+
+for _, server in ipairs(servers.data) do
+    if server.id ~= game.JobId and server.playing < server.maxPlayers then
+        table.insert(availableServers, server.id)
+    end
+end
+
+task.spawn(function()
+    while task.wait(0.1) do
+        if HumanoidRootPart then
+            pcall(function()
+                if workspace.BankRobbery.BankCash.Main.CashBillboard.MoneyLabel.Text ~= "$0" then
+                    HumanoidRootPart.CFrame = workspace.BankRobbery.BankCash.Main.CFrame * CFrame.new(0, 5, 0)
+                    for _=1,10 do
+                        Signal.FireServer("stealBankCash")
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+local ItemPickups = {}
+for _, des in ipairs(workspace.Game.Entities.ItemPickup:GetDescendants()) do
+    if des:IsA("ProximityPrompt") then
+        des.MaxActivationDistance = 0
+        table.insert(ItemPickups, des)
+    elseif des:IsA("ClickDetector") then
+        table.insert(ItemPickups, des)
+    end
+end
+workspace.Game.Entities.ItemPickup.DescendantAdded:Connect(function(des)
+    if des:IsA("ProximityPrompt") then
+        des.MaxActivationDistance = 0
+        table.insert(ItemPickups, des)
+    elseif des:IsA("ClickDetector") then
+        table.insert(ItemPickups, des)
+    end
+end)
+
+local Permanent = {}
+for _, folder in pairs({
+    ReplicatedStorage.devv.shared.Indicies.v3items.bin.Holdable,
+    ReplicatedStorage.devv.shared.Indicies.v3items.bin.Droppable,
+    ReplicatedStorage.devv.shared.Indicies.v3items.bin.Melee
+}) do
+    for _, child in pairs(folder:GetChildren()) do
+        if child and child:IsA("ModuleScript") then
+            local module = require(child)
+            for k, v in pairs(module) do
+                if k == "permanent" then
+                    table.insert(Permanent, module.name)
+                end
+            end
+        end
+    end
+end
+
+task.spawn(function()
+    while task.wait(0.01) do
+        for _, v in pairs(ItemPickups) do
+            if v and v.Parent and v:IsA("ProximityPrompt") and table.find(Permanent, v.ObjectText) then
+                Humanoid:Move(Vector3.new(1, 0, 0))
+                HumanoidRootPart.CFrame = v.Parent.CFrame
+                fireproximityprompt(v)
+                Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end
+end)
+
+task.spawn(function()
+    task.wait(5)
+    if #availableServers > 0 then
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, availableServers[math.random(1, #availableServers)])
+    end
+end)
+
+LocalPlayer.OnTeleport:Connect(function()
+	queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/454244513/Open-Source/refs/heads/main/%E4%BF%84%E4%BA%A5%E4%BF%84%E5%B7%9E%E6%8D%A2%E6%9C%8D%E6%8C%82%E6%9C%BA'))()")
+end)
