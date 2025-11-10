@@ -28,8 +28,10 @@ for _, server in ipairs(servers.data) do
     end
 end
 
+local bankdone
+
 task.spawn(function()
-    while task.wait(0.1) do
+    while task.wait(0.01) do
         if HumanoidRootPart then
             pcall(function()
                 if workspace.BankRobbery.BankCash.Main.CashBillboard.MoneyLabel.Text ~= "$0" then
@@ -37,6 +39,8 @@ task.spawn(function()
                     for _=1,10 do
                         Signal.FireServer("stealBankCash")
                     end
+                else
+                    bankdone = true
                 end
             end)
         end
@@ -79,6 +83,8 @@ for _, folder in pairs({
     end
 end
 
+local itemdone
+
 task.spawn(function()
     while task.wait(0.01) do
         for _, v in pairs(ItemPickups) do
@@ -87,15 +93,18 @@ task.spawn(function()
                 HumanoidRootPart.CFrame = v.Parent.CFrame
                 fireproximityprompt(v)
                 Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            else
+                itemdone = true
             end
         end
     end
 end)
 
 task.spawn(function()
-    task.wait(8)
-    if #availableServers > 0 then
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, availableServers[math.random(1, #availableServers)])
+    while task.wait(0.1) do
+        if bankdone and itemdone and #availableServers > 0 then
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, availableServers[math.random(1, #availableServers)])
+        end
     end
 end)
 
