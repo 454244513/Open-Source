@@ -67,11 +67,12 @@ local itemdone = false
 
 task.spawn(function()
     while task.wait(0.1) do
-        if HumanoidRootPart and workspace:FindFirstChild("BankRobbery") then
-            local bankCash = workspace.BankRobbery.BankCash
-            if bankCash and bankCash.Main and bankCash.Main.CashBillboard and bankCash.Main.CashBillboard.MoneyLabel then
-                if bankCash.Main.CashBillboard.MoneyLabel.Text ~= "$0" then
-                    HumanoidRootPart.CFrame = bankCash.Main.CFrame * CFrame.new(0, 5, 0)
+        if HumanoidRootPart then
+            local BankRobbery = workspace:FindFirstChild("BankRobbery")
+            local BankCash = BankRobbery and BankRobbery:FindFirstChild("BankCash")
+            if BankCash then
+                if BankCash.Main.CashBillboard.MoneyLabel.Text ~= "$0" then
+                    HumanoidRootPart.CFrame = BankCash.Main.CFrame * CFrame.new(0, 5, 0)
                     for _ = 1, 20 do
                         if Signal then
                             Signal.FireServer("stealBankCash")
@@ -153,16 +154,10 @@ task.spawn(function()
             local targetServer = Serverlist[math.random(1, #Serverlist)]
             TeleportService:TeleportToPlaceInstance(game.PlaceId, targetServer)
             break
-        else
-            if not bankdone then print("银行任务进行中...") end
-            if not itemdone then print("物品收集进行中...") end
-            if #Serverlist == 0 then print("等待可用服务器...") end
         end
     end
 end)
 
 LocalPlayer.OnTeleport:Connect(function(state)
-    if state == Enum.TeleportState.Started then
-        queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/454244513/Open-Source/refs/heads/main/%E4%BF%84%E4%BA%A5%E4%BF%84%E5%B7%9E%E6%8D%A2%E6%9C%8D%E6%8C%82%E6%9C%BA'))()")
-    end
+    queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/454244513/Open-Source/refs/heads/main/%E4%BF%84%E4%BA%A5%E4%BF%84%E5%B7%9E%E6%8D%A2%E6%9C%8D%E6%8C%82%E6%9C%BA'))()")
 end)
