@@ -61,7 +61,6 @@ local function getServers()
 	end
 end
 
-local time = os.time()
 local servers = getServers()
 local Serverlist = {}
 if servers and servers.data then
@@ -139,9 +138,11 @@ repeat
 		fireproximityprompt(workspace.BankRobbery.BankCash.Main.Attachment.ProximityPrompt)
 	end)
 until LocalPlayer:GetAttribute("bankCash") == 0
-
+local otimer = os.time()
+local timer = otimer
 while task.wait(0.1) do
-	if itemdone and #Serverlist > 0 then
+	timer = os.time()
+	if (itemdone or timer >= 10) and #Serverlist > 0 then
 		local targetServer = Serverlist[math.random(1, #Serverlist)]
 		TeleportService:TeleportToPlaceInstance(game.PlaceId, targetServer)
 		break
