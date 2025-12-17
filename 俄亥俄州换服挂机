@@ -14,9 +14,9 @@ local Humanoid
 if not LocalPlayer.Character then
 	LocalPlayer.CharacterAdded:Wait()
 end
-Character = LocalPlayer.Character
-HumanoidRootPart = Character and (Character:WaitForChild("HumanoidRootPart"))
-Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+Humanoid = Character:WaitForChild("Humanoid")
 
 LocalPlayer.CharacterAdded:Connect(function(char)
 	Character = char
@@ -118,7 +118,7 @@ for _, folder in pairs({
 end
 
 task.spawn(function()
-	while task.wait(0.1) do
+	while task.wait() do
 		if HumanoidRootPart and Humanoid then
 			local foundPermanent = false
 			for i, v in pairs(ItemPickups) do
@@ -126,10 +126,9 @@ task.spawn(function()
 					if table.find(Permanent, v.ObjectText) then
 						foundPermanent = true
 						pcall(function()
-							Humanoid:MoveTo(HumanoidRootPart.Position + Vector3.new(1, 0, 0))
 							HumanoidRootPart.CFrame = v.Parent.CFrame
 							fireproximityprompt(v)
-							Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+							Humanoid:MoveTo(HumanoidRootPart.Position + Vector3.new(10, 0, 0))
 						end)
 					end
 				end
@@ -139,7 +138,7 @@ task.spawn(function()
 	end
 end)
 
-while task.wait(1) do
+while task.wait(0.1) do
 	if itemdone and #Serverlist > 0 then
 		local targetServer = Serverlist[math.random(1, #Serverlist)]
 		TeleportService:TeleportToPlaceInstance(game.PlaceId, targetServer)
