@@ -1,4 +1,6 @@
-if not game:IsLoaded() then game.Loaded:Wait() end
+if not game:IsLoaded() then
+	game.Loaded:Wait()
+end
 
 print("Shadow Hub")
 
@@ -9,16 +11,16 @@ local HumanoidRootPart
 local Humanoid
 
 if not LocalPlayer.Character then
-    LocalPlayer.CharacterAdded:Wait()
+	LocalPlayer.CharacterAdded:Wait()
 end
 Character = LocalPlayer.Character
 HumanoidRootPart = Character and (Character.PrimaryPart or Character:WaitForChild("HumanoidRootPart", 10))
 Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
 
 LocalPlayer.CharacterAdded:Connect(function(char)
-    Character = char
-    HumanoidRootPart = char:WaitForChild("HumanoidRootPart", 10)
-    Humanoid = char:FindFirstChildOfClass("Humanoid")
+	Character = char
+	HumanoidRootPart = char:WaitForChild("HumanoidRootPart", 10)
+	Humanoid = char:FindFirstChildOfClass("Humanoid")
 end)
 
 local TeleportService = game:GetService("TeleportService")
@@ -26,140 +28,114 @@ local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
 
 local function getServers()
-    local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100"
-    
-    local success, response = pcall(function()
-        return game:HttpGet(url)
-    end)
-    
-    if success then
-        if not response or response == "" then
-            return
-        end
-        
-        local success2, data = pcall(function()
-            return HttpService:JSONDecode(response)
-        end)
-        
-        if success2 then
-            return data
-        end
-    end
+	local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100"
+
+	local success, response = pcall(function()
+		return game:HttpGet(url)
+	end)
+
+	if success then
+		if not response or response == "" then
+			return
+		end
+
+		local success2, data = pcall(function()
+			return HttpService:JSONDecode(response)
+		end)
+
+		if success2 then
+			return data
+		end
+	end
 end
 
 local time = os.time()
 local servers = getServers()
 local Serverlist = {}
-
 if servers and servers.data then
-    for _, server in ipairs(servers.data) do
-        if server.id ~= game.JobId and server.playing < server.maxPlayers then
-            table.insert(Serverlist, server.id)
-        end
-    end
+	for _, server in ipairs(servers.data) do
+		if server.id ~= game.JobId and server.playing < server.maxPlayers then
+			table.insert(Serverlist, server.id)
+		end
+	end
 end
 
-local devv = require(ReplicatedStorage.devv)
-local load = devv.load
-local Signal = load("Signal")
-local bankdone = false
 local itemdone = false
-
-task.spawn(function()
-    while task.wait(0.1) do
-        if HumanoidRootPart then
-            local BankRobbery = workspace:FindFirstChild("BankRobbery")
-            local BankCash = BankRobbery and BankRobbery:FindFirstChild("BankCash")
-            if BankCash then
-                if BankCash.Main.CashBillboard.MoneyLabel.Text ~= "$0" then
-                    HumanoidRootPart.CFrame = BankCash.Main.CFrame * CFrame.new(0, 5, 0)
-                    for _ = 1, 20 do
-                        if Signal then
-                            Signal.FireServer("stealBankCash")
-                        end
-                    end
-                end
-            end
-        end
-    end
-end)
-
-bankdone = true
 
 local ItemPickups = {}
 local Permanent = {}
 
 for _, des in ipairs(workspace.Game.Entities.ItemPickup:GetDescendants()) do
-    if des:IsA("ProximityPrompt") then
-        des.MaxActivationDistance = 0
-        table.insert(ItemPickups, des)
-    elseif des:IsA("ClickDetector") then
-        table.insert(ItemPickups, des)
-    end
+	if des:IsA("ProximityPrompt") then
+		des.MaxActivationDistance = 0
+		table.insert(ItemPickups, des)
+	elseif des:IsA("ClickDetector") then
+		table.insert(ItemPickups, des)
+	end
 end
 
 workspace.Game.Entities.ItemPickup.DescendantAdded:Connect(function(des)
-    if des:IsA("ProximityPrompt") then
-        des.MaxActivationDistance = 0
-        table.insert(ItemPickups, des)
-    elseif des:IsA("ClickDetector") then
-        table.insert(ItemPickups, des)
-    end
+	if des:IsA("ProximityPrompt") then
+		des.MaxActivationDistance = 0
+		table.insert(ItemPickups, des)
+	elseif des:IsA("ClickDetector") then
+		table.insert(ItemPickups, des)
+	end
 end)
 
 for _, folder in pairs({
-    ReplicatedStorage.devv.shared.Indicies.v3items.bin.Holdable,
-    ReplicatedStorage.devv.shared.Indicies.v3items.bin.Droppable,
-    ReplicatedStorage.devv.shared.Indicies.v3items.bin.Melee
+	ReplicatedStorage.devv.shared.Indicies.v3items.bin.Holdable,
+	ReplicatedStorage.devv.shared.Indicies.v3items.bin.Droppable,
+	ReplicatedStorage.devv.shared.Indicies.v3items.bin.Melee,
 }) do
-    if folder then
-        for _, child in pairs(folder:GetChildren()) do
-            if child and child:IsA("ModuleScript") then
-                local success, module = pcall(require, child)
-                if success and module then
-                    if module.permanent and module.name then
-                        table.insert(Permanent, module.name)
-                    end
-                end
-            end
-        end
-    end
+	if folder then
+		for _, child in pairs(folder:GetChildren()) do
+			if child and child:IsA("ModuleScript") then
+				local success, module = pcall(require, child)
+				if success and module then
+					if module.permanent and module.name then
+						table.insert(Permanent, module.name)
+					end
+				end
+			end
+		end
+	end
 end
 
 task.spawn(function()
-    while task.wait(0.1) do
-        if HumanoidRootPart and Humanoid then
-            local foundPermanent = false
-            for i, v in pairs(ItemPickups) do
-                if v and v.Parent and v:IsA("ProximityPrompt") and v.ObjectText then
-                    if table.find(Permanent, v.ObjectText) then
-                        foundPermanent = true
-                        pcall(function()
-                            Humanoid:MoveTo(HumanoidRootPart.Position + Vector3.new(1, 0, 0))
-                            HumanoidRootPart.CFrame = v.Parent.CFrame
-                            fireproximityprompt(v)
-                            Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                        end)
-                    end
-                end
-            end
-            itemdone = not foundPermanent
-        end
-    end
+	while task.wait(0.1) do
+		if HumanoidRootPart and Humanoid then
+			local foundPermanent = false
+			for i, v in pairs(ItemPickups) do
+				if v and v.Parent and v:IsA("ProximityPrompt") and v.ObjectText then
+					if table.find(Permanent, v.ObjectText) then
+						foundPermanent = true
+						pcall(function()
+							Humanoid:MoveTo(HumanoidRootPart.Position + Vector3.new(1, 0, 0))
+							HumanoidRootPart.CFrame = v.Parent.CFrame
+							fireproximityprompt(v)
+							Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+						end)
+					end
+				end
+			end
+			itemdone = not foundPermanent
+		end
+	end
 end)
 
 task.spawn(function()
-    while task.wait(1) do
-        if bankdone and itemdone and #Serverlist > 0 then
-            local targetServer = Serverlist[math.random(1, #Serverlist)]
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, targetServer)
-            break
-        end
-    end
+	while task.wait(1) do
+		if itemdone and #Serverlist > 0 then
+			local targetServer = Serverlist[math.random(1, #Serverlist)]
+			TeleportService:TeleportToPlaceInstance(game.PlaceId, targetServer)
+			break
+		end
+	end
 end)
 
 LocalPlayer.OnTeleport:Connect(function(state)
-    queue_on_teleport([[
+	queue_on_teleport([[
         if not game:IsLoaded() then game.Loaded:Wait() end
         local Players = cloneref(game:GetService("Players"))
         local LocalPlayer = Players.LocalPlayer
