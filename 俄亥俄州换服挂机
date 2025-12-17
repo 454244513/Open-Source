@@ -73,15 +73,6 @@ if servers and servers.data then
 end
 
 local itemdone = false
-
-repeat
-	task.wait()
-	pcall(function()
-		HumanoidRootPart.CFrame = workspace.BankRobbery.BankCash.Main.CFrame * CFrame.new(0, 5, 0)
-		fireproximityprompt(workspace.BankRobbery.BankCash.Main.Attachment.ProximityPrompt)
-	end)
-until LocalPlayer:GetAttribute("bankCash") == 0
-
 local ItemPickups = {}
 local Permanent = {}
 for _, des in ipairs(workspace.Game.Entities.ItemPickup:GetDescendants()) do
@@ -140,6 +131,14 @@ task.spawn(function()
 		end
 	end
 end)
+
+repeat
+	task.wait()
+	pcall(function()
+		HumanoidRootPart.CFrame = workspace.BankRobbery.BankCash.Main.CFrame * CFrame.new(0, 5, 0)
+		fireproximityprompt(workspace.BankRobbery.BankCash.Main.Attachment.ProximityPrompt)
+	end)
+until LocalPlayer:GetAttribute("bankCash") == 0
 
 while task.wait(0.1) do
 	if itemdone and #Serverlist > 0 then
