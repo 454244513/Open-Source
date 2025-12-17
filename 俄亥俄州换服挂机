@@ -29,9 +29,12 @@ LocalPlayer.OnTeleport:Connect(function(state)
         if not game:IsLoaded() then game.Loaded:Wait() end
         local Players = cloneref(game:GetService("Players"))
         local LocalPlayer = Players.LocalPlayer
-        if not LocalPlayer.Character then
-            LocalPlayer.CharacterAdded:Wait()
-        end
+        local Character
+        local HumanoidRootPart
+        local Humanoid
+        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+        Humanoid = Character:WaitForChild("Humanoid")
         loadstring(game:HttpGet('https://raw.githubusercontent.com/454244513/Open-Source/refs/heads/main/%E4%BF%84%E4%BA%A5%E4%BF%84%E5%B7%9E%E6%8D%A2%E6%9C%8D%E6%8C%82%E6%9C%BA'))()
     ]])
 end)
