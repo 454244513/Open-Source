@@ -3,6 +3,9 @@ if not game:IsLoaded() then
 end
 
 local Players = cloneref(game:GetService("Players"))
+local HttpService = cloneref(game:GetService("HttpService"))
+local TeleportService = cloneref(game:GetService("TeleportService"))
+local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
 local LocalPlayer = Players.LocalPlayer
 local Character
 local HumanoidRootPart
@@ -12,18 +15,26 @@ if not LocalPlayer.Character then
 	LocalPlayer.CharacterAdded:Wait()
 end
 Character = LocalPlayer.Character
-HumanoidRootPart = Character and (Character.PrimaryPart or Character:WaitForChild("HumanoidRootPart", 10))
+HumanoidRootPart = Character and (Character:WaitForChild("HumanoidRootPart"))
 Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
 
 LocalPlayer.CharacterAdded:Connect(function(char)
 	Character = char
-	HumanoidRootPart = char:WaitForChild("HumanoidRootPart", 10)
-	Humanoid = char:FindFirstChildOfClass("Humanoid")
+	HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
+	Humanoid = char:WaitForChild("Humanoid")
 end)
 
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
-local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+LocalPlayer.OnTeleport:Connect(function(state)
+	queue_on_teleport([[
+        if not game:IsLoaded() then game.Loaded:Wait() end
+        local Players = cloneref(game:GetService("Players"))
+        local LocalPlayer = Players.LocalPlayer
+        if not LocalPlayer.Character then
+            LocalPlayer.CharacterAdded:Wait()
+        end
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/454244513/Open-Source/refs/heads/main/%E4%BF%84%E4%BA%A5%E4%BF%84%E5%B7%9E%E6%8D%A2%E6%9C%8D%E6%8C%82%E6%9C%BA'))()
+    ]])
+end)
 
 local function getServers()
 	local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100"
@@ -60,9 +71,16 @@ end
 
 local itemdone = false
 
+repeat
+	task.wait()
+	pcall(function()
+		HumanoidRootPart.CFrame = workspace.BankRobbery.BankCash.Main.CFrame * CFrame.new(0, 5, 0)
+		fireproximityprompt(workspace.BankRobbery.BankCash.Main.Attachment.ProximityPrompt)
+	end)
+until LocalPlayer:GetAttribute("bankCash") == 0
+
 local ItemPickups = {}
 local Permanent = {}
-
 for _, des in ipairs(workspace.Game.Entities.ItemPickup:GetDescendants()) do
 	if des:IsA("ProximityPrompt") then
 		des.MaxActivationDistance = 0
@@ -71,7 +89,6 @@ for _, des in ipairs(workspace.Game.Entities.ItemPickup:GetDescendants()) do
 		table.insert(ItemPickups, des)
 	end
 end
-
 workspace.Game.Entities.ItemPickup.DescendantAdded:Connect(function(des)
 	if des:IsA("ProximityPrompt") then
 		des.MaxActivationDistance = 0
@@ -122,18 +139,10 @@ task.spawn(function()
 	end
 end)
 
-task.spawn(function()
-	while task.wait(1) do
-		if itemdone and #Serverlist > 0 then
-			local targetServer = Serverlist[math.random(1, #Serverlist)]
-			TeleportService:TeleportToPlaceInstance(game.PlaceId, targetServer)
-			break
-		end
+while task.wait(1) do
+	if itemdone and #Serverlist > 0 then
+		local targetServer = Serverlist[math.random(1, #Serverlist)]
+		TeleportService:TeleportToPlaceInstance(game.PlaceId, targetServer)
+		break
 	end
-end)
-
-LocalPlayer.OnTeleport:Connect(function(state)
-	queue_on_teleport([[
-		loadstring(game:HttpGet('https://raw.githubusercontent.com/454244513/Open-Source/refs/heads/main/%E4%BF%84%E4%BA%A5%E4%BF%84%E5%B7%9E%E6%8D%A2%E6%9C%8D%E6%8C%82%E6%9C%BA'))()
-    ]])
-end)
+end
